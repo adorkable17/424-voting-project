@@ -1,5 +1,9 @@
 from tkinter import *
 from tkinter import messagebox
+from Crypto.Cipher import AES
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
+
 
 def GetEmployeeID(option):
     f = open("myfile.txt", "w")
@@ -12,8 +16,37 @@ def GetCandidate(option):
     f.write("\n" + option)
     f.close()
 
-def encrypt():
-    print("it works")
+def vote_CBC_encryption(vote_info):
+   
+    #Encrypts the information of who was voted for using CBC
+    key = b"thisistestkey"
+    iv = b"thisistestinitialvector"
+
+    cipher = AES.new(key,AES.MODE_CBC, iv)
+    pad = len(vote_info)%16*-1
+    vote_trimmed = vote_info[64:pad]
+    ciphertext = cipher.encrypt(vote_trimmed)
+    ciphertext = vote_info[0:64] + ciphertext + vote_info[pad:]
+    
+    return[ciphertext]
+
+def vote_RSA_encyption(vote_info):
+    mod_len = 1024
+    key = RSA.generate(mod_len, e = 151153)
+    #private_key = key.exportKey("PEM")
+    
+    #private key above will only be needed if client developes 
+    #the keys and shares with the server
+    
+    public_key = key.publickey().exportKey("PEM")
+    
+    #now that the keys have been made, one must be sent to the
+    #system and RSA encryption must be done on the voter ID
+    
+    cipher = PKCS1_OAEP.new(public_key)
+    ciphertext = cipher.encrypt(vote_info)
+    
+    return[ciphertext]
 
 def on_closing():
     if messagebox.askokcancel("Quit", "Are you done voting?"):
