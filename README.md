@@ -4,4 +4,4 @@ Descriptions:
 - gui.py
   - hosts voting GUI as a multiple choice option as well as takes voter employee ID and outputs a .txt file
   - .txt file's first string is voter employee ID, second string is candidate's employee ID (who voter voted for)
-  - encryption TBA
+  - encryption via CBC happens right away in the same file so that there's no trace of the original plaintext
