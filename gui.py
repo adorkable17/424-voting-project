@@ -3,17 +3,13 @@ from tkinter import messagebox
 import os
 import binascii
 import Crypto.Random
+from Crypto.Util.Padding import pad
 from Crypto.Cipher import AES
+from PIL import Image, ImageTk
 
 def GetEmployeeID(option):
     f = open("myfile.txt", "w")
     f.write(option)
-    f.close()
-
-def AddBS():
-    option = 123456789087654323751937457192384691237401234238423423748237472346278364923746298374283746127384682374692374692387462837461923741293746238429346239847621384762198374612834698123746798236498137462798569347613984168923746128973641827364982374398
-    f = open("myfile.txt", "a")
-    f.write("\n" + str(option))
     f.close()
     
 def GetCandidate(option):
@@ -31,17 +27,15 @@ def encrypt():
     cipher = AES.new(key, AES.MODE_CBC, iv)
     with open("myfile.txt", "rb") as f:
         byteblock = f.read()
-    pad = len(byteblock)%16 * -1
-    byteblock_trimmed = byteblock[64:pad]
-    ciphertext = cipher.encrypt(byteblock_trimmed)
-    ciphertext = byteblock[0:64] + ciphertext + byteblock[pad:]
-    f = open("myfile.txt", "wb")
+    ciphertext = cipher.encrypt(pad(byteblock, AES.block_size))
+    f = open("myfile_EN.txt", "wb")
     f.write(ciphertext)
 
 def on_closing():
     if messagebox.askokcancel("Quit", "Are you done voting?"):
         L1.destroy()
         E1.destroy()
+        L3.destroy()
         R1.destroy()
         R2.destroy()
         R3.destroy()
@@ -51,10 +45,12 @@ top = Tk()
 top.title("WadePoll")
 var = IntVar()
 
-L1 = Label(top, text = "Voter Employee ID")
+L1 = Label(top, text = "Voter Employee ID:")
 L1.pack(anchor = NW)
 E1 = Entry(top, bd = 5)
 E1.pack(anchor = NW)
+L3 = Label(top, text = "Choose a Candidate:")
+L3.pack(anchor = NW)
 
 R1 = Radiobutton(top, text = "Candidate1", variable = var, value = 12345678)
 R1.pack( anchor = W )
@@ -67,14 +63,16 @@ def callBack():
     VoterID = E1.get()
     GetEmployeeID(VoterID)
     GetCandidate(var)
-    AddBS()
     encrypt()
     on_closing()
-    # canvas = Canvas(top, width = 300, height = 300)      
-    # canvas.pack()
-    # img = PhotoImage(file="finalpicture.ppm")      
-    # canvas.create_image(anchor=CENTER, image=img)
-    # L2 = Label(top, text = "Thanks for using the WadePoll!")
+    L2 = Label(top, text= "Thank you for using the WadePoll!")
+    L2.config(font=("Comic Sans MS", 44))
+    L2.pack(anchor = N)
+    load = Image.open("finalpicture.png")
+    render = ImageTk.PhotoImage(load)
+    img = Label(top, image=render)
+    img.image = render
+    img.pack(anchor = CENTER)
     
 B = Button(top, text = "Submit", command = callBack)
 B.place(x = 50,y = 50)
